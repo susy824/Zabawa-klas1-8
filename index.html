@@ -210,188 +210,122 @@
         document.getElementById('playButton').addEventListener('click', startGame);
         document.getElementById('settingsButton').addEventListener('click', showSettings);
         document.getElementById('creatorButton').addEventListener('click', showCreator);
-        document.getElementById('easyButton').addEventListener('click', () => playGame('łatwy'));
-        document.getElementById('normalButton').addEventListener('click', () => playGame('normalny'));
-        document.getElementById('hardButton').addEventListener('click', () => playGame('matematyk'));
-        document.getElementById('answerButton').addEventListener('click', submitAnswer);
-        document.getElementById('buttonStyle1').addEventListener('click', () => changeButtonStyle('style1'));
-        document.getElementById('buttonStyle2').addEventListener('click', () => changeButtonStyle('style2'));
-        document.getElementById('buttonStyle3').addEventListener('click', () => changeButtonStyle('style3'));
-        document.getElementById('buttonStyle4').addEventListener('click', () => changeButtonStyle('style4'));
-        document.getElementById('buttonStyle5').addEventListener('click', () => changeButtonStyle('style5'));
-        document.getElementById('background1').addEventListener('click', () => changeBackground('#f0f0f0'));
-        document.getElementById('background2').addEventListener('click', () => changeBackground('#d1e7dd'));
-        document.getElementById('background3').addEventListener('click', () => changeBackground('#f8d7da'));
-        document.getElementById('background4').addEventListener('click', () => changeBackground('#fff3cd'));
-        document.getElementById('background5').addEventListener('click', () => changeBackground('#dbe5ff'));
 
         function startGame() {
-            document.getElementById('playButton').classList.add('hidden');
-            document.getElementById('settingsButton').classList.add('hidden');
-            document.getElementById('creatorButton').classList.add('hidden');
-            document.getElementById('game').classList.remove('hidden');
+            showGameMenu();
         }
 
-        function showSettings() {
-            document.getElementById('playButton').classList.add('hidden');
-            document.getElementById('settingsButton').classList.add('hidden');
-            document.getElementById('creatorButton').classList.add('hidden');
-            document.getElementById('settings').classList.remove('hidden');
+        function showGameMenu() {
+            document.getElementById('game').classList.remove('hidden');
+            document.getElementById('quiz').classList.add('hidden');
+            document.getElementById('settings').classList.add('hidden');
+            document.getElementById('creator').classList.add('hidden');
         }
 
         function showMainMenu() {
-            document.getElementById('playButton').classList.remove('hidden');
-            document.getElementById('settingsButton').classList.remove('hidden');
-            document.getElementById('creatorButton').classList.remove('hidden');
+            document.getElementById('game').classList.add('hidden');
+            document.getElementById('quiz').classList.add('hidden');
             document.getElementById('settings').classList.add('hidden');
+            document.getElementById('creator').classList.add('hidden');
+            document.getElementById('playButton').style.display = 'inline-block';
+            document.getElementById('settingsButton').style.display = 'inline-block';
+            document.getElementById('creatorButton').style.display = 'inline-block';
+        }
+
+        function showSettings() {
+            document.getElementById('settings').classList.remove('hidden');
             document.getElementById('game').classList.add('hidden');
             document.getElementById('quiz').classList.add('hidden');
             document.getElementById('creator').classList.add('hidden');
         }
 
         function showCreator() {
-            document.getElementById('playButton').classList.add('hidden');
-            document.getElementById('settingsButton').classList.add('hidden');
-            document.getElementById('creatorButton').classList.add('hidden');
             document.getElementById('creator').classList.remove('hidden');
-        }
-
-        function playGame(level) {
-            currentLevel = level;
-            startQuiz();
-        }
-
-        function startQuiz() {
             document.getElementById('game').classList.add('hidden');
-            document.getElementById('quiz').classList.remove('hidden');
+            document.getElementById('quiz').classList.add('hidden');
+            document.getElementById('settings').classList.add('hidden');
+        }
+
+        document.getElementById('easyButton').addEventListener('click', () => startQuiz('easy'));
+        document.getElementById('normalButton').addEventListener('click', () => startQuiz('normal'));
+        document.getElementById('hardButton').addEventListener('click', () => startQuiz('hard'));
+
+        function startQuiz(level) {
+            currentLevel = level;
+            questions = getQuestions(level);
             currentQuestion = 0;
-            questions = generateRandomQuestions();
-            answers = calculateAnswers(questions);
-            timeLeft = getTimeForLevel(currentLevel);
-            document.getElementById('timer').innerText = `Czas: ${timeLeft} minut`;
-            showQuestion();
+            timeLeft = 10; // Przykładowy czas na odpowiedź
             startTimer();
+            showQuestion();
+            document.getElementById('quiz').classList.remove('hidden');
+            document.getElementById('game').classList.add('hidden');
         }
 
-        function showQuestion() {
-            if (currentQuestion < questions.length) {
-                document.getElementById('question').innerText = questions[currentQuestion];
-                document.getElementById('feedback').innerText = '';
-            } else {
-                endQuiz();
+        function getQuestions(level) {
+            // Przykładowe pytania
+            if (level === 'easy') {
+                return [
+                    { question: "2 + 2", answer: 4 },
+                    { question: "3 + 5", answer: 8 }
+                ];
+            } else if (level === 'normal') {
+                return [
+                    { question: "5 + 7", answer: 12 },
+                    { question: "10 - 3", answer: 7 }
+                ];
+            } else if (level === 'hard') {
+                return [
+                    { question: "12 * 3", answer: 36 },
+                    { question: "15 / 3", answer: 5 }
+                ];
             }
-        }
-
-        function submitAnswer() {
-            const userAnswer = parseInt(document.getElementById('answer').value);
-            if (userAnswer === answers[currentQuestion]) {
-                document.getElementById('feedback').innerText = getRandomCorrectFeedback();
-                document.getElementById('feedback').classList.add('correct');
-                document.getElementById('feedback').classList.remove('incorrect');
-                currentQuestion++;
-                showQuestion();
-            } else {
-                document.getElementById('feedback').innerText = 'Błędna odpowiedź';
-                document.getElementById('feedback').classList.add('incorrect');
-                document.getElementById('feedback').classList.remove('correct');
-            }
+            return [];
         }
 
         function startTimer() {
+            clearInterval(timerId);
+            timeLeft = 10;
             timerId = setInterval(() => {
                 timeLeft--;
-                document.getElementById('timer').innerText = `Czas: ${timeLeft} minut`;
+                document.getElementById('timer').innerText = `Czas pozostały: ${timeLeft}s`;
                 if (timeLeft <= 0) {
                     clearInterval(timerId);
                     endQuiz();
                 }
-            }, 60000);
+            }, 1000);
+        }
+
+        function showQuestion() {
+            const question = questions[currentQuestion];
+            document.getElementById('question').innerText = question.question;
+            document.getElementById('answer').value = '';
+            document.getElementById('feedback').innerText = '';
+        }
+
+        document.getElementById('answerButton').addEventListener('click', checkAnswer);
+
+        function checkAnswer() {
+            const userAnswer = parseInt(document.getElementById('answer').value);
+            const correctAnswer = questions[currentQuestion].answer;
+
+            if (userAnswer === correctAnswer) {
+                document.getElementById('feedback').innerText = 'Dobrze!';
+                document.getElementById('feedback').classList.add('correct');
+                currentQuestion++;
+                if (currentQuestion < questions.length) {
+                    showQuestion();
+                } else {
+                    endQuiz();
+                }
+            } else {
+                document.getElementById('feedback').innerText = 'Źle, spróbuj ponownie.';
+                document.getElementById('feedback').classList.add('incorrect');
+            }
         }
 
         function endQuiz() {
             alert('Koniec gry!');
-            document.getElementById('quiz').classList.add('hidden');
-        }
-
-        function generateRandomQuestions() {
-            const easyQuestions = [
-                "1 + 1", "2 - 1", "3 + 2", "5 - 2", "7 + 1",
-                "4 + 5", "10 - 3", "8 + 1", "3 + 4", "6 + 4",
-                "2 - 1", "5 - 0", "9 - 4"
-            ];
-            const normalQuestions = [
-                "30 + 18", "3 * 4", "8 / 2", "53 - 61", "66 + 77",
-                "12 / 3", "9 * 1", "48 - 12", "78 + 38", "15 - 15",
-                "20 / 5", "2 * 3", "10 + 10", "14 - 6", "18 / 2",
-                "3 * 5", "9 - 3", "6 + 2", "7 * 1", "8 - 4",
-                "5 / 1", "12 + 6", "11 - 2", "3 * 4", "10 / 2"
-            ];
-            const hardQuestions = [
-                "120 + 28", "15 * 3", "24 / 6", "102 - 25", "187 + 22",
-                "30 / 5", "4 * 7", "87 - 13", "50 / 10", "141 + 16",
-                "7 * 9", "45 - 10", "6 + 18", "36 / 4", "9 * 5",
-                "100 / 5", "8 + 24", "60 / 12", "25 - 15", "40 + 10",
-                "80 / 4", "14 * 3", "30 + 35", "60 - 20", "30 + 20"
-            ];
-
-            switch(currentLevel) {
-                case 'łatwy':
-                    return easyQuestions.sort(() => 0.5 - Math.random()).slice(0, 25);
-                case 'normalny':
-                    return normalQuestions.sort(() => 0.5 - Math.random()).slice(0, 25);
-                case 'matematyk':
-                    return hardQuestions.sort(() => 0.5 - Math.random()).slice(0, 25);
-                default:
-                    return [];
-            }
-        }
-
-        function calculateAnswers(questions) {
-            return questions.map(question => eval(question));
-        }
-
-        function getTimeForLevel(level) {
-            switch(level) {
-                case 'łatwy':
-                    return 25;
-                case 'normalny':
-                    return 10;
-                case 'matematyk':
-                    return 5;
-                default:
-                    return 0;
-            }
-        }
-
-        function getRandomCorrectFeedback() {
-            const feedbackMessages = ['Dobrze!', 'Świetnie!', 'Doskonale!'];
-            return feedbackMessages[Math.floor(Math.random() * feedbackMessages.length)];
-        }
-
-        function changeButtonStyle(style) {
-            const buttons = document.querySelectorAll('button');
-            buttons.forEach(button => {
-                if (style === 'style1') {
-                    button.style.backgroundColor = '#007bff';
-                    button.style.color = 'white';
-                } else if (style === 'style2') {
-                    button.style.backgroundColor = '#ff5733';
-                    button.style.color = 'black';
-                } else if (style === 'style3') {
-                    button.style.backgroundColor = '#28a745';
-                    button.style.color = 'white';
-                } else if (style === 'style4') {
-                    button.style.backgroundColor = '#ffc107';
-                    button.style.color = 'black';
-                } else if (style === 'style5') {
-                    button.style.backgroundColor = '#17a2b8';
-                    button.style.color = 'white';
-                }
-            });
-        }
-
-        function changeBackground(color) {
-            document.body.style.backgroundColor = color;
+            showMainMenu();  // Wracamy do menu głównego
         }
 
         function openAd(url) {
